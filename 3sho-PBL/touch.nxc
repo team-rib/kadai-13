@@ -1,0 +1,40 @@
+ #define MOVE_POWER 50
+ 
+ //subroutine
+ 
+ //turn left
+ sub Left(){
+     OnFwd(OUT_A,MOVE_POWER);
+     OnRev(OUT_B,MOVE_POWER);
+ }
+ //turn right
+ sub Right(){
+     OnFwd(OUT_B,MOVE_POWER);
+     OnRev(OUT_A,MOVE_POWER);
+ }
+ //go forward
+ sub Fwd(){
+     OnFwd(OUT_AB,MOVE_POWER);
+ }
+ //go back
+ sub Back(){
+     OnRev(OUT_AB,MOVE_POWER);
+ }
+
+ //task
+
+ task main(){
+      SetSensorType(IN_1,SENSOR_TYPE_TOUCH);
+      SetSensorMode(IN_1,SENSOR_MODE_BOOL);
+      while(true){
+           Fwd();
+           Wait(100);
+           if(SENSOR_1){//if the touch sensor is pressed
+                Back();
+                Wait(2000);
+                Left();
+                Wait(2000);
+           }
+      }
+
+ }

@@ -1,0 +1,82 @@
+ #define MOVE_POWER 50
+ #define LIGHT_LIMIT 500
+ sub Left(){
+     OnFwd(OUT_A,MOVE_POWER);
+     OnRev(OUT_B,MOVE_POWER);
+ }
+ sub Right(){
+     OnFwd(OUT_B,MOVE_POWER);
+     OnRev(OUT_A,MOVE_POWER);
+ }
+ sub Fwd(){
+     OnFwd(OUT_AB,MOVE_POWER);
+ }
+ sub Rev(){
+     OnRev(OUT_AB,MOVE_POWER);
+ }
+ 
+ bool SearchAround(){
+     long init_time,time;
+     init_time = CurrentTick();
+     while(true){
+          time = CurrentTick() - init_time;
+          if(time < 500){
+                Left();
+          }else if(time < 1000){
+                Right();
+          }else if(time < 2000){
+                Left();
+          }else if(time < 3500){
+                Right();
+          }else if(time < 5500){
+                Left();
+          }else{
+                return false;
+          }
+          
+          if(SENSOR_1 > LIGHT_LIMIT){
+                return true;
+          }
+     }
+}
+
+
+ 
+ task main(){
+      SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
+      SetSensorMode(IN_1,SENSOR_MODE_RAW);
+      int count = 0;
+      long init_time,time;
+      bool flag = false;
+      time = CurrentTick();
+      while(true){
+           /*if(flag){
+                 if(count < 2000){
+                       Fwd();
+                 }else if(count < 5000){
+                       Left();
+                 }else if(count < 11000){
+                       Right();
+                 }else if(count < 14000){
+                       Left();
+                 }else{
+                       count = 0;
+                 }
+           }
+           if(SENSOR_1 > LIGHT_LIMIT){
+                 Fwd();
+                 flag = false;
+           }else{
+                 flag = true;
+           }
+           Wait(1);
+           count++;*/
+           if(SENSOR_1<LIGHT_LIMIT){
+                Fwd();
+           }else
+      }
+ }
+ 
+
+
+
