@@ -1,5 +1,5 @@
  //This program is written by tane and ozono.
- //We create it to check if robot can chase the ball.
+ //We create it to check if the robot can chase the ball.
  
  #define MOVE_POWER 50         //0~100
  #define LIGHT_LIMIT 500       //0~1023
@@ -34,7 +34,7 @@
       int count = 0;
       bool flag = false;
       
-      //Loop
+      //loop
       while(true){
            if(flag){
                  if(count < 2000){
@@ -49,7 +49,7 @@
                        count = 0;
                  }
            }
-           if(SENSOR_1 > LIGHT_LIMIT){
+           if(SENSOR_1 > LIGHT_LIMIT){//if the light sensor is exceeds LIGHT_LIMIT
                  Fwd();
                  flag = false;
            }else{

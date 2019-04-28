@@ -1,4 +1,7 @@
- #define MOVE_POWER 50
+ //This program is written by tane and ozono.
+ //We create it to check if the robot can recognize the wall.
+
+ #define MOVE_POWER 50        //0~100
  
  //subroutine
  
@@ -24,8 +27,11 @@
  //task
 
  task main(){
+      //initial setting
       SetSensorType(IN_1,SENSOR_TYPE_TOUCH);
       SetSensorMode(IN_1,SENSOR_MODE_BOOL);
+      
+      //loop
       while(true){
            Fwd();
            Wait(100);
