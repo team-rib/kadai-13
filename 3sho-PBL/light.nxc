@@ -1,0 +1,65 @@
+ //This program is written by tane and ozono.
+ //We create it to check if the robot can chase the ball.
+ 
+ #define MOVE_POWER 50         //0~100
+ #define LIGHT_LIMIT 500       //0~1023
+ 
+ //subroutine
+
+ //turn left
+ sub Left(){
+     OnFwd(OUT_A,MOVE_POWER);
+     OnRev(OUT_B,MOVE_POWER);
+ }
+ //turn right
+ sub Right(){
+     OnFwd(OUT_B,MOVE_POWER);
+     OnRev(OUT_A,MOVE_POWER);
+ }
+ //go forward
+ sub Fwd(){
+     OnFwd(OUT_AB,MOVE_POWER);
+ }
+ //go back
+ sub Back(){
+     OnRev(OUT_AB,MOVE_POWER);
+ }
+
+ //task
+
+ task main(){
+      //initial setting
+      SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
+      SetSensorMode(IN_1,SENSOR_MODE_RAW);
+      int count = 0;
+      bool flag = false;
+      
+      //loop
+      while(true){
+           if(flag){
+                 if(count < 2000){
+                       Fwd();
+                 }else if(count < 5000){
+                       Left();
+                 }else if(count < 11000){
+                       Right();
+                 }else if(count < 14000){
+                       Left();
+                 }else{
+                       count = 0;
+                 }
+           }
+           if(SENSOR_1 > LIGHT_LIMIT){//if the light sensor exceeds LIGHT_LIMIT
+                 Fwd();
+                 flag = false;
+           }else{
+                 flag = true;
+           }
+           Wait(1);
+           count++;
+      }
+ }
+ 
+
+
+
