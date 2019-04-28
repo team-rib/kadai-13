@@ -15,33 +15,6 @@
      OnRev(OUT_AB,MOVE_POWER);
  }
  
- bool SearchAround(){
-     long init_time,time;
-     init_time = CurrentTick();
-     while(true){
-          time = CurrentTick() - init_time;
-          if(time < 500){
-                Left();
-          }else if(time < 1000){
-                Right();
-          }else if(time < 2000){
-                Left();
-          }else if(time < 3500){
-                Right();
-          }else if(time < 5500){
-                Left();
-          }else{
-                return false;
-          }
-          
-          if(SENSOR_1 > LIGHT_LIMIT){
-                return true;
-          }
-     }
-}
-
-
- 
  task main(){
       SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
       SetSensorMode(IN_1,SENSOR_MODE_RAW);
@@ -50,7 +23,7 @@
       bool flag = false;
       time = CurrentTick();
       while(true){
-           /*if(flag){
+           if(flag){
                  if(count < 2000){
                        Fwd();
                  }else if(count < 5000){
@@ -70,10 +43,7 @@
                  flag = true;
            }
            Wait(1);
-           count++;*/
-           if(SENSOR_1<LIGHT_LIMIT){
-                Fwd();
-           }else
+           count++;
       }
  }
  
