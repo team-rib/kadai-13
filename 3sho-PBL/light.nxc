@@ -4,6 +4,9 @@
  #define MOVE_POWER 50         //0~100
  #define LIGHT_LIMIT 500       //0~1023
  
+ mutex time_mutex;
+ long init_time,time;
+ 
  //subroutine
 
  //turn left
@@ -28,10 +31,7 @@
  //search a ball all around
  //if find a ball,this function return true
  bool SearchAround(){
-     long init_time,time;
-     init_time = CurrentTick();
      while(true){
-          time = CurrentTick() - init_time;
           if(time < 500){
                 Left();
           }else if(time < 1000){
@@ -45,15 +45,31 @@
           }else{
                 return false;
           }
-
+          //if the light sensor exceeds LIGHT_LIMIT
           if(SENSOR_1 > LIGHT_LIMIT){
                 return true;
           }
      }
 }
+ //reset clock
+ sub ClockReset(){
+     Acquire(time_mutex);
+     init_time = CurrentTick();
+     Release(time_mutex);
+ }
 
  //task
+ 
+ //always update time
+ task clock(){
+      while(ture){
+           Acquire(time_mutex);
+           time = CurrentTick() - init_time;
+           Release(time_mutex);
+      }
+ }
 
+ //main
  task main(){
       //initial setting
       SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
