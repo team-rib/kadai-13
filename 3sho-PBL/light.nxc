@@ -6,9 +6,11 @@
  
  mutex time_mutex;
  long init_time,time;
- 
- //subroutine
 
+ //////////////////
+ //  subroutine  //
+ //////////////////
+ 
  //turn left
  sub Left(){
      OnFwd(OUT_A,MOVE_POWER);
@@ -52,13 +54,16 @@
      }
 }
  //reset clock
- sub ClockReset(){
+ sub ResetClock(){
      Acquire(time_mutex);
      init_time = CurrentTick();
+     time = 0;
      Release(time_mutex);
  }
 
- //task
+ //////////////
+ ///  task  ///
+ //////////////
  
  //always update time
  task clock(){
@@ -74,22 +79,23 @@
       //initial setting
       SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
       SetSensorMode(IN_1,SENSOR_MODE_RAW);
-      int count = 0;
       bool flag = false;
-      
+      ResetClock();
+      StartTask(clock);
+
       //loop
       while(true){
            if(flag){
-                 if(count < 2000){
+                 if(time < 2000){
                        Fwd();
-                 }else if(count < 5000){
+                 }else if(time < 5000){
                        Left();
-                 }else if(count < 11000){
+                 }else if(time < 11000){
                        Right();
-                 }else if(count < 14000){
+                 }else if(time < 14000){
                        Left();
                  }else{
-                       count = 0;
+                       ResetClock();
                  }
            }
            if(SENSOR_1 > LIGHT_LIMIT){//if the light sensor exceeds LIGHT_LIMIT
@@ -98,8 +104,6 @@
            }else{
                  flag = true;
            }
-           Wait(1);
-           count++;
       }
  }
  
