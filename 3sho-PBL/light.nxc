@@ -62,7 +62,7 @@
  
  //always update time
  task clock(){
-      while(ture){
+      while(true){
            Acquire(time_mutex);
            time = CurrentTick() - init_time;
            Release(time_mutex);
