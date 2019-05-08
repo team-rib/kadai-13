@@ -25,6 +25,33 @@
      OnRev(OUT_AB,MOVE_POWER);
  }
 
+ //search a ball all around
+ //if find a ball,this function return true
+ bool SearchAround(){
+     long init_time,time;
+     init_time = CurrentTick();
+     while(true){
+          time = CurrentTick() - init_time;
+          if(time < 500){
+                Left();
+          }else if(time < 1000){
+                Right();
+          }else if(time < 2000){
+                Left();
+          }else if(time < 3500){
+                Right();
+          }else if(time < 5500){
+                Left();
+          }else{
+                return false;
+          }
+
+          if(SENSOR_1 > LIGHT_LIMIT){
+                return true;
+          }
+     }
+}
+
  //task
 
  task main(){
