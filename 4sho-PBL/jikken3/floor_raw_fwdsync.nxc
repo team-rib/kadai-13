@@ -1,0 +1,26 @@
+#define OK LDR_SUCCESS
+
+task main(){
+     byte fileHandle;
+     short fileSize;
+     short bytesWritten;
+     string read;
+     string write;
+     
+     SetSensorLight(IN_3);
+     int Light;
+     
+     DeleteFile("L_Data.csv");
+     CreateFile("L_Data.csv",1024,fileHandle);
+     OnFwdSync(OUT_AB,75,0);
+     //3.54s,i > 71
+     for(int i = 0; i < 200; i++){
+             write = NumToStr(SensorRaw(IN_3));
+             string tmp = NumToStr(i);
+             write = StrCat(tmp,",",write);
+             WriteLnString(fileHandle,write,bytesWritten);
+             Wait(50);
+     }
+     CloseFile(fileHandle);
+     Off(OUT_AB);
+}
