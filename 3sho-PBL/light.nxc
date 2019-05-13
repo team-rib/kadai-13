@@ -33,6 +33,7 @@
  //search a ball all around
  //if find a ball,this function return true
  bool SearchAround(){
+     ResetClock();
      while(true){
           if(time < 500){
                 Left();
