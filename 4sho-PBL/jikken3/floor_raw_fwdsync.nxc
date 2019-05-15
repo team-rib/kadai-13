@@ -10,8 +10,8 @@ task main(){
      SetSensorLight(IN_3);
      int Light;
      
-     DeleteFile("L_Data.csv");
-     CreateFile("L_Data.csv",1024,fileHandle);
+     DeleteFile("fwd.csv");
+     CreateFile("fwd.csv",1024,fileHandle);
      OnFwdSync(OUT_AB,75,0);
      //3.54s,i > 71
      for(int i = 0; i < 200; i++){
