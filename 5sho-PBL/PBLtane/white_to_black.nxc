@@ -9,11 +9,21 @@
  mutex time_mutex;
  long init_time,time;
 
+ typedef struct {
+      float raw_data[100];
+      float ave_data[90];
+      float ave_max;
+      float ave_min;
+      float ave_border;
+ } Dtcl;
+
+
  sub Left();
  sub Right();
  sub Fwd();
  sub Back();
  sub ResetClock();
+ Dtcl CollectData();
  task clock();
 
  //////////////
@@ -27,29 +37,39 @@
       SetSensorMode(IN_1,SENSOR_MODE_RAW);
       ResetClock();
       StartTask(clock);
+      Dtcl data;
+      data = CollectData();
+      
 
-      byte fileHandle;
-      short fileSize;
-      short bytesWritten;
-      string read;
-      string write;
-
-      DeleteFile("white_to_black.csv");
-      CreateFile("white_to_black.csv",1024,fileHandle);
-      Left();
-      for(int i = 0; i < 71; i++){
-             write = NumToStr(SensorRaw(IN_3));
-             string tmp = NumToStr(i);
-             write = StrCat(tmp,",",write);
-             WriteLnString(fileHandle,write,bytesWritten);
-             Wait(50);
-      }
-      CloseFile(fileHandle);
       
       //loop
       while(true){
 
       }
+ }
+ 
+ Dtcl CollectData(){
+     Dtcl data_ = {};
+     int i,j,sum = 0;
+     Left();
+     for(int i = 0; i < 100; i++){
+            data_.raw_data[i] = SensorRaw(IN_3);
+            Wait(50);
+     }
+     for(j = 0; j < 90; j++){
+           for(i = j;i < j+10;i++){
+                 sum += data_.raw_data[i];
+           }
+           data_.ave_data[j] = sum/10;
+           
+           if(data_.ave_max < data_.ave_data[j]){
+                 data_.ave_max = data_.ave_data[j];
+           }else if(data_.ave_min > data_.ave_data[j]){
+                 data_.ave_min = data_.ave_data[j];
+           }
+     }
+     data_.ave_border = data_.ave_min + ( data_.ave_max - data_.ave_min )*0.85;
+     return data_;
  }
  
  //always update time
