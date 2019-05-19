@@ -1,0 +1,91 @@
+ //This program is written by tane and ozono
+ //We create it to check if the robot can check the floor.
+
+ #define MOVE_POWER 50         //0~100
+ #define LIGHT_LIMIT 500       //0~1023
+
+ mutex time_mutex;
+ long init_time,time;
+
+ //////////////////
+ //  subroutine  //
+ //////////////////
+
+ //turn left
+ sub Left(){
+     OnFwd(OUT_A,MOVE_POWER);
+     OnRev(OUT_B,MOVE_POWER);
+ }
+ //turn right
+ sub Right(){
+     OnFwd(OUT_B,MOVE_POWER);
+     OnRev(OUT_A,MOVE_POWER);
+ }
+ //go forward
+ sub Fwd(){
+     OnFwdSync(OUT_AB,MOVE_POWER,0);
+ }
+ //go back
+ sub Back(){
+     OnRev(OUT_AB,MOVE_POWER);
+ }
+
+ //search a ball all around
+ //if find a ball,this function return true
+ bool SearchAround(){
+     //ResetClock();
+     while(true){
+          if(time < 500){
+                Left();
+          }else if(time < 1000){
+                Right();
+          }else if(time < 2000){
+                Left();
+          }else if(time < 3500){
+                Right();
+          }else if(time < 5500){
+                Left();
+          }else{
+                return false;
+          }
+          //if the light sensor exceeds LIGHT_LIMIT
+          if(SENSOR_1 > LIGHT_LIMIT){
+                return true;
+          }
+     }
+}
+ //reset clock
+ sub ResetClock(){
+     Acquire(time_mutex);
+     init_time = CurrentTick();
+     time = 0;
+     Release(time_mutex);
+ }
+
+ //////////////
+ ///  task  ///
+ //////////////
+
+ //always update time
+ task clock(){
+      while(true){
+           Acquire(time_mutex);
+           time = CurrentTick() - init_time;
+           Release(time_mutex);
+      }
+ }
+
+ //main
+ task main(){
+      //initial setting
+      SetSensorType(IN_1,SENSOR_TYPE_LIGHT_INACTIVE);
+      SetSensorMode(IN_1,SENSOR_MODE_RAW);
+      bool flag = false;
+      ResetClock();
+      StartTask(clock);
+
+      //loop
+      while(true){
+           Fwd();
+      }
+ }
