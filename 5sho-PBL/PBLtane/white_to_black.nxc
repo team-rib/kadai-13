@@ -6,25 +6,22 @@
  #define MOVE_POWER 50         //0~100
  #define LIGHT_LIMIT 500       //0~1023
 
- mutex time_mutex;
- long init_time,time;
-
+ //a summary of sensor value
  typedef struct {
       float raw_data[100];
       float ave_data[90];
       float ave_max;
       float ave_min;
-      float ave_border;
+      float border;
  } Dtcl;
 
-
+ //prototype declaration
  sub Left();
  sub Right();
  sub Fwd();
  sub Back();
- sub ResetClock();
  Dtcl CollectData();
- task clock();
+
 
  //////////////
  ///  task  ///
@@ -35,51 +32,22 @@
       //initial setting
       SetSensorType(IN_1,SENSOR_TYPE_LIGHT_ACTIVE);
       SetSensorMode(IN_1,SENSOR_MODE_RAW);
-      ResetClock();
-      StartTask(clock);
       Dtcl data;
+
+      //collect light sensor data
       data = CollectData();
       
-
+      //if the light sensor value exceeds the border line
+      while(data.border < SensorRaw(IN_1)){
+           Left();
+      }
       
       //loop
       while(true){
-
+          Fwd();
       }
  }
  
- Dtcl CollectData(){
-     Dtcl data_ = {};
-     int i,j,sum = 0;
-     Left();
-     for(int i = 0; i < 100; i++){
-            data_.raw_data[i] = SensorRaw(IN_3);
-            Wait(50);
-     }
-     for(j = 0; j < 90; j++){
-           for(i = j;i < j+10;i++){
-                 sum += data_.raw_data[i];
-           }
-           data_.ave_data[j] = sum/10;
-           
-           if(data_.ave_max < data_.ave_data[j]){
-                 data_.ave_max = data_.ave_data[j];
-           }else if(data_.ave_min > data_.ave_data[j]){
-                 data_.ave_min = data_.ave_data[j];
-           }
-     }
-     data_.ave_border = data_.ave_min + ( data_.ave_max - data_.ave_min )*0.85;
-     return data_;
- }
- 
- //always update time
- task clock(){
-      while(true){
-           Acquire(time_mutex);
-           time = CurrentTick() - init_time;
-           Release(time_mutex);
-      }
- }
  
  //////////////////
  //  subroutine  //
@@ -97,20 +65,42 @@
  }
  //go forward
  sub Fwd(){
-     OnFwd(OUT_AB,MOVE_POWER);
+     OnFwdSync(OUT_AB,MOVE_POWER,0);
  }
  //go back
  sub Back(){
-     OnRev(OUT_AB,MOVE_POWER);
+     OnRevSync(OUT_AB,MOVE_POWER,0);
  }
 
- //reset clock
- sub ResetClock(){
-     Acquire(time_mutex);
-     init_time = CurrentTick();
-     time = 0;
-     Release(time_mutex);
+ //It collect light sensor data.And it take an average.
+ Dtcl CollectData(){
+    Dtcl data_ = {};
+    int i,j;
+    float sum = 0;
+    Left();
+    
+    //collect raw data
+    for(int i = 0; i < 100; i++){
+           data_.raw_data[i] = SensorRaw(IN_1);
+           Wait(50);
+    }
+    
+    //convert to average
+    for(j = 0; j < 90; j++){
+          for(i = j;i < j+10;i++){
+                sum += data_.raw_data[i];
+          }
+          data_.ave_data[j] = sum/10;
+            if(data_.ave_max < data_.ave_data[j]){
+                data_.ave_max = data_.ave_data[j];
+          }else if(data_.ave_min > data_.ave_data[j]){
+                data_.ave_min = data_.ave_data[j];
+          }
+    }
+    data_.border = data_.ave_min + ( data_.ave_max - data_.ave_min )*0.85;
+    return data_;
  }
+
 
 
 
