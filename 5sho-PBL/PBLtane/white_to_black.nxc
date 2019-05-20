@@ -20,8 +20,12 @@
  sub Right();
  sub Fwd();
  sub Back();
+ sub ResetClock();
+ task clock();
  Dtcl CollectData();
 
+ mutex time_mutex;
+ long init_time,time;
 
  //////////////
  ///  task  ///
@@ -47,7 +51,15 @@
           Fwd();
       }
  }
- 
+
+ //always update time
+ task clock(){
+      while(true){
+           Acquire(time_mutex);
+           time = CurrentTick() - init_time;
+           Release(time_mutex);
+      }
+ }
  
  //////////////////
  //  subroutine  //
