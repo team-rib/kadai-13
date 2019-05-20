@@ -1,18 +1,16 @@
  //This program is written by tane.
  //We create it to check if the robot can go straight from white to black.
 
- #define OK LDR_SUCCESS
-
  #define MOVE_POWER 50         //0~100
  #define LIGHT_LIMIT 500       //0~1023
 
  //a summary of sensor value
  typedef struct {
-      float raw_data[100];
-      float ave_data[90];
-      float ave_max;
-      float ave_min;
-      float border;
+      int raw_data[];
+      int ave_data[];
+      int ave_max;
+      int ave_min;
+      int border;
  } Dtcl;
 
  //prototype declaration
@@ -32,11 +30,12 @@
       //initial setting
       SetSensorType(IN_1,SENSOR_TYPE_LIGHT_ACTIVE);
       SetSensorMode(IN_1,SENSOR_MODE_RAW);
+
       Dtcl data;
 
       //collect light sensor data
       data = CollectData();
-      
+
       //if the light sensor value exceeds the border line
       while(data.border < SensorRaw(IN_1)){
            Left();
@@ -74,17 +73,21 @@
 
  //It collect light sensor data.And it take an average.
  Dtcl CollectData(){
-    Dtcl data_ = {};
+    Dtcl data_;
+    data_.ave_max = 0;
+    data_.ave_min = 0;
+    ArrayInit(data_.raw_data,0,100);
+    ArrayInit(data_.ave_data,0,90);
     int i,j;
-    float sum = 0;
+    unsigned long sum = 0;
     Left();
-    
+
     //collect raw data
     for(int i = 0; i < 100; i++){
            data_.raw_data[i] = SensorRaw(IN_1);
            Wait(50);
     }
-    
+
     //convert to average
     for(j = 0; j < 90; j++){
           for(i = j;i < j+10;i++){
@@ -97,7 +100,8 @@
                 data_.ave_min = data_.ave_data[j];
           }
     }
-    data_.border = data_.ave_min + ( data_.ave_max - data_.ave_min )*0.85;
+    data_.border = data_.ave_min + ( data_.ave_max - data_.ave_min )*85/100;
+
     return data_;
  }
 
