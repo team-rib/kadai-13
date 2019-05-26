@@ -37,10 +37,32 @@
       data = CollectData();
 
       //if the light sensor value exceeds the border line
-      while(data.border < SensorRaw(IN_1)){
+      byte fileHandleOut;
+      short fileSize;
+      short bytesWritten;
+      string read;
+      string write;
+
+      DeleteFile("output.csv");
+      CreateFile("output.csv",1024,fileHandleOut);
+
+      int LPF = SensorRaw(IN_1);
+      int lastLPF = LPF;
+      int k = 25;
+      int i = 1;
+      while(data.border > LPF){
+           LPF += k/100*(SensorRaw(IN_1)-lastLPF);
+           lastLPF = LPF;
+
+           write = NumToStr(LPF);
+           string tmp = NumToStr(i);
+           write = StrCat(tmp,",",write);
+           WriteLnString(fileHandleOut,write,bytesWritten);
+           i++;
+
            Left();
       }
-      
+      CloseFile(fileHandleOut);
       //loop
       while(true){
           Fwd();
@@ -75,18 +97,39 @@
  Dtcl CollectData(){
     Dtcl data_;
     data_.ave_max = 0;
-    data_.ave_min = 0;
+    data_.ave_min = 1024;
     ArrayInit(data_.raw_data,0,100);
     ArrayInit(data_.ave_data,0,90);
     int i,j;
     unsigned long sum = 0;
+
+    byte fileHandleRaw;
+    byte fileHandleAve;
+    short fileSize;
+    short bytesWritten;
+    string read;
+    string write;
+
     Left();
+
+    DeleteFile("raw.csv");
+    CreateFile("raw.csv",1024,fileHandleRaw);
 
     //collect raw data
     for(int i = 0; i < 100; i++){
            data_.raw_data[i] = SensorRaw(IN_1);
+
+           write = NumToStr(data_.raw_data[i]);
+           string tmp = NumToStr(i);
+           write = StrCat(tmp,",",write);
+           WriteLnString(fileHandleRaw,write,bytesWritten);
+
            Wait(50);
     }
+    CloseFile(fileHandleRaw);
+
+    DeleteFile("ave.csv");
+    CreateFile("ave.csv",1024,fileHandleAve);
 
     //convert to average
     for(j = 0; j < 90; j++){
@@ -94,13 +137,24 @@
                 sum += data_.raw_data[i];
           }
           data_.ave_data[j] = sum/10;
-            if(data_.ave_max < data_.ave_data[j]){
+          sum = 0;
+          
+          write = NumToStr(data_.ave_data[j]);
+          string tmp = NumToStr(j);
+          write = StrCat(tmp,",",write);
+          WriteLnString(fileHandleAve,write,bytesWritten);
+
+          if(data_.ave_max < data_.ave_data[j]){
                 data_.ave_max = data_.ave_data[j];
           }else if(data_.ave_min > data_.ave_data[j]){
                 data_.ave_min = data_.ave_data[j];
           }
     }
-    data_.border = data_.ave_min + ( data_.ave_max - data_.ave_min )*85/100;
+    data_.border = data_.ave_min + ( data_.ave_max - data_.ave_min )*10/100;
+
+    write = StrCat(NumToStr(data_.ave_max),",",NumToStr(data_.ave_min),",",NumToStr(data_.border));
+    WriteLnString(fileHandleAve,write,bytesWritten);
+    CloseFile(fileHandleAve);
 
     return data_;
  }
