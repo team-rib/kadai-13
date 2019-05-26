@@ -1,0 +1,90 @@
+ //This program is written by tane.
+ //We create it to check if the robot can go around the ball.
+
+ #define MOVE_POWER 50         //0~100
+ #define LIGHT_LIMIT 500       //0~1023
+
+
+ //prototype declaration
+ sub Init();
+ sub Left();
+ sub Right();
+ sub Fwd();
+ sub Back();
+ sub FwdRate(int left_rate,int right_rate);
+ int LightAve(int sensor_num,int size);
+ 
+ //////////////
+ ///  task  ///
+ //////////////
+
+ //main
+ task main(){
+      //initial setting
+      int late_value = 0;
+      Init();
+
+      late_value = LightAve(IN_1,5);
+      Back();
+      Wait(1000);
+      if(late_value > LightAve(IN_1,5)){
+           Fwd();
+           Wait(1000);
+
+           Left();
+           Wait(2500);
+
+           FwdRate(1,3);
+           Wait(3500);
+
+           Right();
+           Wait(2500);
+      }
+      Fwd();
+      Wait(3000);
+      
+ }
+
+
+ //////////////////
+ //  subroutine  //
+ //////////////////
+
+ //initial setting
+ sub Init(){
+     SetSensorType(IN_1,SENSOR_TYPE_LIGHT_ACTIVE);
+     SetSensorMode(IN_1,SENSOR_MODE_RAW);
+ }
+ //turn left
+ sub Left(){
+     OnFwd(OUT_A,MOVE_POWER);
+     OnRev(OUT_B,MOVE_POWER);
+ }
+ //turn right
+ sub Right(){
+     OnFwd(OUT_B,MOVE_POWER);
+     OnRev(OUT_A,MOVE_POWER);
+ }
+ //go forward
+ sub Fwd(){
+     OnFwdSync(OUT_AB,MOVE_POWER,0);
+ }
+ //go back
+ sub Back(){
+     OnRevSync(OUT_AB,MOVE_POWER,0);
+ }
+ //rotate at a fixed rate
+ sub FwdRate(int left_rate,int right_rate){
+     OnFwd(OUT_A,100*left_rate/(left_rate + right_rate));
+     OnRev(OUT_B,100*right_rate/(left_rate + right_rate));
+ }
+ //take the average of light sensor values
+ int LightAve(int sensor_num,int size){
+     int sum = 0;
+     int i;
+     for(i = 0; i < size; i++){
+           sum += SensorRaw(sensor_num);
+           Wait(100);
+     }
+     return sum/size;
+ }
